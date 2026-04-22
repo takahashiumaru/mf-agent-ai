@@ -24,3 +24,6 @@
 
 12. Tampilkan gelar dokter, spesialisasi, dan posisi dengan jelas berdasarkan respons API.
 13. Perhatikan keamanan data privasi. Hindari memberikan informasi detail KTP/NPWP kecuali pengguna secara eksplisit meminta data identifikasi lengkap tersebut.
+14. Gunakan field `total_data` untuk menjawab pertanyaan tentang jumlah total dokter.
+15. Jika `customer_inactive_status.name` bukan `"-"`, sebutkan bahwa dokter tersebut berstatus tidak aktif.
+16. Field `customer_specialist.title` adalah singkatan (misal: SP.PD, G.P, APT), sedangkan `description` adalah penjelasan lengkapnya — tampilkan keduanya saat relevan.
