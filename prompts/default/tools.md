@@ -95,6 +95,44 @@ Gunakan tool ini **setiap kali** ada pertanyaan terkait pencarian data dokter, c
 
 ---
 
+### get_visits
+
+Mencari atau merekap data transaksi kunjungan lapangan aktual dari tabel `visits`.
+
+Gunakan tool/kueri ini setiap kali ada pertanyaan terkait realisasi kunjungan (call) MR/sales di lapangan, filter per struktur, periode `YYYYMM`, tanggal, atau status kunjungan.
+
+> **Ingat Aturan Domain:**  
+> - **Total Kunjungan Sah**: Wajib memfilter data yang minimal sudah check-out (`checkout_time IS NOT NULL` / status `check-out`, `closed`, `approved`, `realization-approved`).
+> - **Plan Approved**: Hanya rencana jadwal, bukan kunjungan riil.
+
+**Parameter Umum:**
+
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `period` | string | Ya | Periode kunjungan format YYYYMM (contoh: "202609") |
+| `structure_id` | string | Tidak | Kode struktur karyawan/MR (contoh: "BDGA1S201", "BDGA1") |
+| `status` | string | Tidak | Status kunjungan ("realization-approved", "check-out", "check-in", "plan-approved") |
+| `start_date` / `end_date` | string | Tidak | Filter tanggal check-in (contoh: "2026-09-28") |
+
+---
+
+### get_mcl (get_visit_customers)
+
+Mencari data target/alokasi rencana bulanan Master Customer List dari tabel `visit_customers`.
+
+Gunakan tool/kueri ini jika pengguna menanyakan daftar rencana/target dokter yang harus dikunjungi oleh seorang MR dalam suatu periode.
+
+**Parameter Umum:**
+
+| Parameter | Tipe | Wajib | Keterangan |
+|---|---|---|---|
+| `period` | string | Ya | Periode target bulanan format YYYYMM (contoh: "202609") |
+| `structure_id` | string | Tidak | Kode struktur karyawan (contoh: "BDGA1S201") |
+| `priority` | string | Tidak | Prioritas dokter ("A", "B", "C") |
+| `status` | string | Tidak | Status approval target ("approved", "draft", "submitted", "rejected") |
+
+---
+
 ## Format Plan
 
 AI harus mengembalikan objek JSON dengan array `plan`. Setiap langkah harus memiliki `step`, `action`, dan `parameters`.
@@ -115,7 +153,7 @@ AI harus mengembalikan objek JSON dengan array `plan`. Setiap langkah harus memi
 
 ## Contoh Plan Multi-Step
 
-**Contoh — pengguna mencari dokter berdasarkan nama:**
+**Contoh 1 — mencari dokter berdasarkan nama:**
 ```json
 {
   "plan": [
@@ -128,9 +166,15 @@ AI harus mengembalikan objek JSON dengan array `plan`. Setiap langkah harus memi
 }
 ```
 
-
-
-<!--
-  Tambahkan tool baru dengan menduplikasi blok "### function_one" di atas
-  dan mendaftarkan endpoint-nya di endpoints.json.
--->
+**Contoh 2 — mencari riwayat kunjungan realisasi:**
+```json
+{
+  "plan": [
+    {
+      "step": 1,
+      "action": "get_visits",
+      "parameters": { "period": "202609", "structure_id": "BDGA1S201" }
+    }
+  ]
+}
+```

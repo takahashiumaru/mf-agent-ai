@@ -1,7 +1,0 @@
-{
-  "get_doctors": {
-    "url": "https://ski-compliance-metiska-farma-api.flexurio.com/customers/no-auth",
-    "token": "",
-    "method": "GET"
-  }
-}

@@ -1,0 +1,21 @@
+# Testing inventory and execution policy
+
+Inventory date: 2026-09-27. HEAD: `42d46c39ff303b1d84e77306fccf44b6e42ab83b`. Found **2 test source files**. Directory counts do not establish behavior coverage. No application test or build was run for this documentation rollout.
+
+| Directory | Test files |
+| --- | ---: |
+| `helper` | 2 |
+
+## Select checks by task
+
+Run application tests only when requested. Inspect test fixtures and configuration first; use mocks or isolated test data. Never start the application or mutate production to validate documentation. Search assertions and callers for the affected behavior rather than inferring coverage from file names.
+
+Commands available when appropriate (not execution evidence):
+
+```sh
+go build ./...
+go vet ./...
+go test ./...
+```
+
+Record command, revision, timestamp, exit status, package scope and limitations for actual runs. Coverage artifacts/badges may be historical. Preserve JSON/file/proxy contracts, transaction handles and zero/NULL semantics in relevant checks.
