@@ -22,26 +22,27 @@ jobs:
           port: ${{ secrets.SSH_PORT || 22 }}
           script: |
             set -e
+            TARGET_DIR="/home/ubuntu/mf-agent-ai"
 
-            # 1. Cek jika folder repo belum ada, lakukan clone otomatis
-            if [ ! -d "mf-agent-ai" ]; then
-              echo "==> Folder mf-agent-ai tidak ditemukan di server. Melakukan git clone..."
-              git clone https://github.com/takahashiumaru/mf-agent-ai.git
-              cd mf-agent-ai
+            # 1. Cek jika folder repo belum ada di /home/ubuntu/mf-agent-ai, lakukan clone
+            if [ ! -d "$TARGET_DIR" ]; then
+              echo "==> Folder $TARGET_DIR tidak ditemukan di server. Melakukan git clone..."
+              git clone https://github.com/takahashiumaru/mf-agent-ai.git "$TARGET_DIR"
+              cd "$TARGET_DIR"
 
               # Buat .env default jika belum ada
               if [ ! -f ".env" ] && [ -f ".env.example" ]; then
                 cp .env.example .env
-                echo "==> File .env telah disiapkan dari .env.example"
+                echo "==> File .env telah disiapkan dari .env.example di $TARGET_DIR"
               fi
             else
-              echo "==> Folder mf-agent-ai sudah ada. Mengambil update terbaru (git pull)..."
-              cd mf-agent-ai
+              echo "==> Folder $TARGET_DIR ditemukan. Mengambil update terbaru (git pull)..."
+              cd "$TARGET_DIR"
               git pull origin main
             fi
 
             # 2. Build dan jalankan container
-            echo "==> Menjalankan Docker Compose..."
+            echo "==> Menjalankan Docker Compose di $TARGET_DIR..."
             docker compose up -d --build
 
-            echo "==> ✅ Deploy selesai dan container aktif!"
+            echo "==> ✅ Deploy selesai dan container aktif di /home/ubuntu/mf-agent-ai!"
