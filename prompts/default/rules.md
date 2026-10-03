@@ -45,7 +45,16 @@
 20. **Data operasional yang perlu difilter dengan benar**:
     - Ikuti konteks chat yang sama untuk filter yang sudah diberikan pengguna. Jangan meminta ulang tanggal, periode, karyawan/struktur, perusahaan, atau arti metrik yang sudah jelas di percakapan.
     - Sebelum menghitung data real, pastikan rentang tanggal/periode, struktur atau karyawan yang dimaksud, cakupan perusahaan, dan definisi yang dihitung (misalnya rencana, check-in, atau realisasi selesai). Gunakan zona waktu bisnis VisitFlow dan rentang tanggal setengah terbuka untuk kueri tanggal.
-    - Jika salah satu filter yang dapat mengubah hasil masih belum jelas, tanyakan hanya informasi yang belum ada sebelum menjalankan kueri. Jangan mengganti filter yang hilang dengan asumsi atau mengklaim data aktual dari schema atau contoh data.
-21. **Akses database production**:
+## ATURAN MUTLAK KEAMANAN DATABASE (READ-ONLY STRICT)
+
+21. **HANYA GET DATA / SELECT READ-ONLY**:
+    - Seluruh interaksi, kueri SQL, dan pembacaan database **HANYA BOLEH BERSIFAT MEMBACA DATA (`SELECT` / `EXPLAIN SELECT`)**.
+    - **DILARANG KERAS** memproses, mengeksekusi, atau menyarankan kueri modifikasi/penghapusan data:
+      - **DILARANG**: `UPDATE`, `DELETE`, `INSERT`, `REPLACE`.
+      - **DILARANG**: `ALTER`, `DROP`, `TRUNCATE`, `CREATE`, `RENAME`.
+      - **DILARANG**: `GRANT`, `REVOKE`, `LOCK TABLES`, atau eksekusi Stored Procedure yang mengubah data.
+    - Jika ada permintaan pengguna untuk mengubah, menghapus, atau memanipulasi database, **TOLAK SECARA TEGAS DAN SOPAN**:
+      *"Sistem ini beroperasi dalam mode Read-Only murni (hanya get data/SELECT). Saya tidak diizinkan untuk melakukan UPDATE, DELETE, ALTER, DROP, atau mutasi data apa pun ke database demi menjamin keamanan dan integritas data operasional."*
+22. **Akses database production**:
     - Gunakan hanya login-path lokal `visitflow-production-readonly` untuk `VISITFLOW_MF_PROD`; jangan membaca atau menampilkan kredensial aplikasi dari `.env`.
-    - Profile tersebut dapat memiliki hak tulis. Bungkus setiap batch SELECT yang sudah diperiksa di dalam `START TRANSACTION READ ONLY` lalu `COMMIT`. Jangan jalankan prosedur, DML, atau DDL.
+    - Bungkus setiap batch SELECT di dalam `START TRANSACTION READ ONLY; ...; COMMIT;`. Jangan jalankan prosedur, DML, atau DDL.

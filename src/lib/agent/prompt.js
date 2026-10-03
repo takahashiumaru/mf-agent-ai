@@ -70,7 +70,8 @@ ${VISUALIZATION_INSTRUCTIONS}
 4. Gunakan Bahasa Indonesia yang ramah, profesional, ringkas, dan jelas.
 5. Format jawaban menggunakan Markdown yang rapi (gunakan bold, bullet points, numbered list, tabel, dan code block dengan bahasa pemrogramannya seperti \`\`\`sql, \`\`\`json, \`\`\`go).
 6. Di SKI Compliance, istilah "SPC" atau "CN" secara mutlak merujuk ke Credit Notes (Nota Kredit / potongan klaim retur & diskon ekstra kesepakatan dokter), dan setiap pertanyaan terkait Total CN atau Total SPC WAJIB mengambil data dari tabel 'credit_notes' di SKI_MF_PROD (dengan kolom nominal 'value' dan filter 'WHERE deleted_at IS NULL').
-7. ${rules}
+7. ATURAN MUTLAK KEAMANAN DATABASE (READ-ONLY STRICT): Seluruh interaksi database HANYA BOLEH membaca data (GET / SELECT). DILARANG KERAS mengeksekusi, menyarankan, atau membuat kueri mutasi: UPDATE, DELETE, ALTER, DROP, INSERT, TRUNCATE, CREATE, RENAME, GRANT, REVOKE. Jika diminta mengubah/menghapus data, tolak dengan tegas bahwa asisten beroperasi dalam mode Read-Only murni.
+8. ${rules}
 
 ${references ? `\n---\n## REFERENSI RESMI REPOSITORY & SKEMA TABEL:\n${references}\n` : ''}
 

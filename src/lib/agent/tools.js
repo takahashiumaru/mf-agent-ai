@@ -95,12 +95,15 @@ export async function executeSafeDbQuery(sqlQuery, options = {}) {
   const database = options.database || getDatabaseForProject(options.project);
   const sanitized = sqlQuery.trim().replace(/;+$/, '');
 
-  // Enforce read-only SELECT only
-  if (!/^SELECT\b/i.test(sanitized)) {
-    return { error: 'Only SELECT queries are allowed.', success: false };
+  // 1. Enforce read-only: Query must start with SELECT or EXPLAIN
+  if (!/^(SELECT|EXPLAIN)\b/i.test(sanitized)) {
+    return { error: 'Operasi ditolak. Hanya query SELECT read-only yang diizinkan.', success: false };
   }
-  if (/\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE|GRANT|REVOKE)\b/i.test(sanitized)) {
-    return { error: 'DML/DDL statements are forbidden.', success: false };
+
+  // 2. Strict blacklist: Absolutely NO mutation, DDL, DML, or administrative commands
+  const forbiddenKeywords = /\b(INSERT|UPDATE|DELETE|DROP|ALTER|TRUNCATE|CREATE|REPLACE|RENAME|GRANT|REVOKE|LOCK|CALL|EXEC|EXECUTE|SET|HANDLER)\b/i;
+  if (forbiddenKeywords.test(sanitized)) {
+    return { error: 'Operasi dibatalkan: Dilarang keras mengeksekusi DML/DDL (UPDATE, DELETE, ALTER, DROP, INSERT, dll). Sistem hanya beroperasi dalam mode Read-Only.', success: false };
   }
 
   // Try local MySQL login-path first (preferred), then fallback to direct env
@@ -123,12 +126,18 @@ export async function executeSafeDbQuery(sqlQuery, options = {}) {
 
     return { success: true, data: rows };
   } catch (err) {
-    // Fallback using direct credentials if login-path fails
-    const host = process.env.MYSQL_HOST || '103.24.106.204';
-    const port = process.env.MYSQL_PORT || '5721';
-    const user = process.env.MYSQL_USER || 'vneu_umar';
-    const password = process.env.MYSQL_PASSWORD || 'Jk7Emp4T8';
-    const fallbackCmd = `mysql -h ${host} -P ${port} -u ${user} -p'${password}' ${database} -e "START TRANSACTION READ ONLY; ${sanitized}; COMMIT;"`;
+    // Fallback using direct env credentials if login-path fails
+    const host = process.env.MYSQL_HOST;
+    const port = process.env.MYSQL_PORT || '3306';
+    const user = process.env.MYSQL_USER;
+    const password = process.env.MYSQL_PASSWORD;
+
+    if (!host || !user) {
+      console.error('[Tool SafeDbQuery] Login-path and DB env credentials not available:', err.message);
+      return { error: `Gagal menjalankan query: ${err.message}`, success: false };
+    }
+
+    const fallbackCmd = `mysql -h ${host} -P ${port} -u ${user} -p'${password || ''}' ${database} -e "START TRANSACTION READ ONLY; ${sanitized}; COMMIT;"`;
 
     try {
       const { stdout } = await execAsync(fallbackCmd, { timeout: 15000 });
