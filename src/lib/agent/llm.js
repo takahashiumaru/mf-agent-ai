@@ -33,10 +33,40 @@ function getEnvFallback(key) {
   return envFallbackParsed[key] || '';
 }
 
+export function normalizeModelForApi(rawModel) {
+  if (!rawModel) return 'combo-9router';
+  
+  const m = String(rawModel).trim();
+
+  // Already prefixed or default combo
+  if (m.startsWith('ag/') || m.startsWith('cx/') || m === 'combo-9router') {
+    return m;
+  }
+
+  // Codex / OpenAI models on 9router
+  if (m === 'codex-luna-6-low' || m === 'luna-6-low' || m === 'gpt-6-luna' || m === 'luna') {
+    return 'cx/gpt-6-luna';
+  }
+  if (m === 'codex-sol-6.1-low' || m === 'sol-6.1-low' || m === 'gpt-6.1-sol' || m === 'sol') {
+    return 'cx/gpt-6.1-sol';
+  }
+  if (m.startsWith('gpt-') || m.startsWith('codex-')) {
+    const clean = m.replace(/^codex-/, '');
+    return `cx/${clean}`;
+  }
+
+  // Gemini / Claude models on 9router
+  if (m.startsWith('gemini-') || m.startsWith('claude-')) {
+    return `ag/${m}`;
+  }
+
+  return 'combo-9router';
+}
+
 export function getLLMConfig() {
   const api = process.env.LLM_API || getEnvFallback('LLM_API') || 'https://9router.takahashiumaru.web.id/v1/chat/completions';
   const token = process.env.LLM_TOKEN || getEnvFallback('LLM_TOKEN') || 'sk-f053a22d0367387b-nn7ld6-63cc27ad';
-  const model = process.env.LLM_MODEL || getEnvFallback('LLM_MODEL') || 'combo-9router';
+  const model = normalizeModelForApi(process.env.LLM_MODEL || getEnvFallback('LLM_MODEL') || 'combo-9router');
   return { api, token, model };
 }
 
@@ -48,7 +78,7 @@ export function getLLMConfig() {
  */
 export async function* streamChatCompletions(messages, options = {}) {
   const { api, token, model } = getLLMConfig();
-  const selectedModel = options.model || model;
+  const selectedModel = normalizeModelForApi(options.model || model);
 
   const payload = {
     model: selectedModel,
