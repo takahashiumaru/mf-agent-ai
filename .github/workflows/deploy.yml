@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.0.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
@@ -20,14 +22,16 @@ jobs:
           passphrase: ${{ secrets.SSH_PASSPHRASE }}
           password: ${{ secrets.SSH_PASSWORD }}
           port: ${{ secrets.SSH_PORT || 22 }}
+          envs: GITHUB_TOKEN
           script: |
             set -e
             TARGET_DIR="/home/ubuntu/mf-agent-ai"
+            REPO_URL="https://x-access-token:${GITHUB_TOKEN}@github.com/takahashiumaru/mf-agent-ai.git"
 
             # 1. Cek jika folder repo belum ada di /home/ubuntu/mf-agent-ai, lakukan clone
             if [ ! -d "$TARGET_DIR" ]; then
               echo "==> Folder $TARGET_DIR tidak ditemukan di server. Melakukan git clone..."
-              git clone https://github.com/takahashiumaru/mf-agent-ai.git "$TARGET_DIR"
+              git clone "$REPO_URL" "$TARGET_DIR"
               cd "$TARGET_DIR"
 
               # Buat .env default jika belum ada
@@ -36,8 +40,9 @@ jobs:
                 echo "==> File .env telah disiapkan dari .env.example di $TARGET_DIR"
               fi
             else
-              echo "==> Folder $TARGET_DIR ditemukan. Mengambil update terbaru (git pull)..."
+              echo "==> Folder $TARGET_DIR ditemukan. Mengambil update terbaru..."
               cd "$TARGET_DIR"
+              git remote set-url origin "$REPO_URL"
               git pull origin main
             fi
 
