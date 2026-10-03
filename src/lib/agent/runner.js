@@ -295,15 +295,18 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       }
     }
 
-    if (mode === 'cli') {
-      const conversationContext = recentHistory.length
-        ? recentHistory.map(({ role, content }, index) =>
-            `${index + 1}. ${role === 'user' ? 'PENGGUNA' : (isCompliance ? 'SKI COMPLIANCE AI' : 'VISITFLOW AI')}:\n${content}`
-          ).join('\n\n')
-        : 'Belum ada pesan sebelumnya. Ini adalah pesan pertama pada chat ini.';
+    let ranViaCli = false;
 
-      // Run AGY / Codex CLI
-      const cliInstruction = isCompliance ? `
+    if (mode === 'cli') {
+      try {
+        const conversationContext = recentHistory.length
+          ? recentHistory.map(({ role, content }, index) =>
+              `${index + 1}. ${role === 'user' ? 'PENGGUNA' : (isCompliance ? 'SKI COMPLIANCE AI' : 'VISITFLOW AI')}:\n${content}`
+            ).join('\n\n')
+          : 'Belum ada pesan sebelumnya. Ini adalah pesan pertama pada chat ini.';
+
+        // Run AGY / Codex CLI
+        const cliInstruction = isCompliance ? `
 Kamu adalah Ski Compliance AI Assistant untuk Metiska Farma.
 Peranmu adalah membantu pengguna menjawab pertanyaan teknis, arsitektur, skema database (SKI_MF_PROD), aturan kesepakatan kerjasama dokter (SKI), target marketing, bridging distributor, credit notes (SPC), maupun data transaksi Sales & Field Force (SalesFf).
 Seluruh basis pengetahuan, aturan bisnis, arsitektur 16 microservices, dan skema SKI Compliance tersimpan secara lokal dan mandiri di dalam repositori ini (folder knowledge/ski-compliance dan prompts/ski-compliance).
@@ -410,17 +413,21 @@ Pertanyaan Pengguna:
 ${userPrompt}
 `.trim();
 
-      const isCodex = selectedModel.includes('luna') || selectedModel.includes('sol') || selectedModel.startsWith('gpt-');
-      const cliStream = runCliAgentStream(cliInstruction, {
-        cli: isCodex ? 'codex' : (selectedModel.startsWith('gemini') ? 'agy' : (process.env.AGENT_CLI || 'codex')),
-        model: selectedModel,
-        signal: options.signal
-      });
+        const isCodex = selectedModel.includes('luna') || selectedModel.includes('sol') || selectedModel.startsWith('gpt-');
+        const cliStream = runCliAgentStream(cliInstruction, {
+          cli: isCodex ? 'codex' : (selectedModel.startsWith('gemini') ? 'agy' : (process.env.AGENT_CLI || 'codex')),
+          model: selectedModel,
+          signal: options.signal
+        });
 
-      for await (const chunk of cliStream) {
-        yield { type: 'chunk', text: chunk.text };
+        for await (const chunk of cliStream) {
+          yield { type: 'chunk', text: chunk.text };
+          ranViaCli = true;
+        }
+        if (ranViaCli) return;
+      } catch (cliErr) {
+        console.warn('[Agent Runner] CLI mode execution failed, falling back to Direct LLM API:', cliErr.message);
       }
-      return;
     }
 
     const systemPrompt = buildSystemPrompt(contextBlock, toolResultsBlock, project);

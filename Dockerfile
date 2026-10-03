@@ -21,6 +21,7 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOST=0.0.0.0
+ENV AGENT_MODE=api
 
 # Copy package files and install production dependencies only
 COPY package*.json ./

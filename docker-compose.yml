@@ -9,6 +9,8 @@ services:
       - "3000:3000"
     env_file:
       - .env
+    environment:
+      - AGENT_MODE=api
     volumes:
       - mf_agent_data:/app/data
     healthcheck:

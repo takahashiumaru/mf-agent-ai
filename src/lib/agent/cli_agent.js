@@ -58,6 +58,13 @@ export async function* runCliAgentStream(prompt, options = {}) {
     stdio: ['ignore', 'pipe', 'pipe']
   });
 
+  let spawnError = null;
+
+  child.on('error', (err) => {
+    spawnError = err;
+    console.warn(`[CLI Agent] Spawn error (${cliBinary}):`, err.message);
+  });
+
   if (options.signal) {
     options.signal.addEventListener('abort', () => {
       try {
@@ -68,55 +75,67 @@ export async function* runCliAgentStream(prompt, options = {}) {
 
   let stderrOutput = '';
 
-  child.stderr.on('data', (data) => {
-    const str = data.toString();
-    stderrOutput += str;
-    // Suppress non-fatal background model-list refresh timeouts and stdin prompts
-    if (
-      !str.includes('failed to refresh available models') &&
-      !str.includes('Reading additional input from stdin')
-    ) {
-      console.warn(`[CLI Agent Stderr]:`, str);
-    }
-  });
+  if (child.stderr) {
+    child.stderr.on('data', (data) => {
+      const str = data.toString();
+      stderrOutput += str;
+      // Suppress non-fatal background model-list refresh timeouts and stdin prompts
+      if (
+        !str.includes('failed to refresh available models') &&
+        !str.includes('Reading additional input from stdin')
+      ) {
+        console.warn(`[CLI Agent Stderr]:`, str);
+      }
+    });
+  }
 
   const stdout = child.stdout;
   let buffer = '';
 
-  if (isCodex) {
-    // Process JSONL events from codex exec --json
-    for await (const chunk of stdout) {
-      buffer += chunk.toString();
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+  if (stdout) {
+    if (isCodex) {
+      // Process JSONL events from codex exec --json
+      for await (const chunk of stdout) {
+        buffer += chunk.toString();
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || '';
 
-      for (const line of lines) {
-        const trimmed = line.trim();
-        if (!trimmed) continue;
-        try {
-          const event = JSON.parse(trimmed);
-          if (event.type === 'item.completed' && event.item) {
-            if (event.item.type === 'agent_message' && event.item.text) {
-              yield { type: 'chunk', text: event.item.text };
+        for (const line of lines) {
+          const trimmed = line.trim();
+          if (!trimmed) continue;
+          try {
+            const event = JSON.parse(trimmed);
+            if (event.type === 'item.completed' && event.item) {
+              if (event.item.type === 'agent_message' && event.item.text) {
+                yield { type: 'chunk', text: event.item.text };
+              }
+            } else if (event.type === 'error' && event.message) {
+              console.warn('[Codex Event Error]:', event.message);
             }
-          } else if (event.type === 'error' && event.message) {
-            console.warn('[Codex Event Error]:', event.message);
+          } catch (e) {
+            // If non-JSON chunk, pass raw text if meaningful
           }
-        } catch (e) {
-          // If non-JSON chunk, pass raw text if meaningful
         }
       }
-    }
-  } else {
-    for await (const chunk of stdout) {
-      const text = chunk.toString();
-      yield { type: 'chunk', text };
+    } else {
+      for await (const chunk of stdout) {
+        const text = chunk.toString();
+        yield { type: 'chunk', text };
+      }
     }
   }
 
   const exitCode = await new Promise((resolve) => {
+    if (spawnError) {
+      return resolve(-1);
+    }
     child.on('close', resolve);
+    child.on('error', () => resolve(-1));
   });
+
+  if (spawnError) {
+    throw new Error(`CLI binary '${cliBinary}' tidak dapat dijalankan: ${spawnError.message}`);
+  }
 
   if (exitCode !== 0) {
     const cleanError = stderrOutput.trim() || `CLI exited with code ${exitCode}`;
