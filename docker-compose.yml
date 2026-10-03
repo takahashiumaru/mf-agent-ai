@@ -10,7 +10,7 @@ services:
     env_file:
       - .env
     volumes:
-      - visitflow_data:/app/data
+      - mf_agent_data:/app/data
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/"]
       interval: 30s
@@ -19,5 +19,5 @@ services:
       start_period: 10s
 
 volumes:
-  visitflow_data:
+  mf_agent_data:
     driver: local
