@@ -95,6 +95,8 @@ export async function* streamChatCompletions(messages, options = {}) {
     headers['Authorization'] = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
   }
 
+  console.log(`[LLM API] Requesting stream completions from 9Router (Model: ${selectedModel}, Messages: ${messages.length})`);
+
   const res = await fetch(api, {
     method: 'POST',
     headers,
@@ -110,6 +112,7 @@ export async function* streamChatCompletions(messages, options = {}) {
   const reader = res.body.getReader();
   const decoder = new TextDecoder('utf-8');
   let buffer = '';
+  let chunkCount = 0;
 
   try {
     while (true) {
@@ -123,7 +126,10 @@ export async function* streamChatCompletions(messages, options = {}) {
       for (const line of lines) {
         const trimmed = line.trim();
         if (!trimmed || trimmed.startsWith(':')) continue;
-        if (trimmed === 'data: [DONE]') return;
+        if (trimmed === 'data: [DONE]') {
+          console.log(`[LLM API] Stream completed [DONE] (Model: ${selectedModel}, Chunks: ${chunkCount})`);
+          return;
+        }
 
         if (trimmed.startsWith('data: ')) {
           const jsonStr = trimmed.slice(6);
@@ -132,6 +138,7 @@ export async function* streamChatCompletions(messages, options = {}) {
             const delta = parsed.choices?.[0]?.delta;
             if (delta) {
               if (delta.content) {
+                chunkCount++;
                 yield delta.content;
               }
             }
@@ -141,6 +148,7 @@ export async function* streamChatCompletions(messages, options = {}) {
         }
       }
     }
+    console.log(`[LLM API] Stream finished (Model: ${selectedModel}, Chunks: ${chunkCount})`);
   } finally {
     reader.releaseLock();
   }

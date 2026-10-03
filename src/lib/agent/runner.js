@@ -95,6 +95,12 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
   }));
 
   try {
+    const project = options.project || 'visitflow';
+    const isCompliance = project === 'ski-compliance';
+    const lowerPrompt = userPrompt.toLowerCase();
+
+    console.log(`[Agent] Received prompt for project [${project}] (mode: ${mode}, model: ${selectedModel}): "${userPrompt.slice(0, 100)}"`);
+
     // 1. Context Retrieval from Repository Knowledge
     const retrievedChunks = retrieveContext(userPrompt, 5);
     const contextBlock = formatContextBlock(retrievedChunks);
@@ -105,12 +111,10 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       score: Math.round(c.score * 10) / 10
     }));
 
+    console.log(`[Agent RAG] Retrieved ${retrievedChunks.length} knowledge chunks (Top match: ${sources[0]?.source || 'none'} - score ${sources[0]?.score || 0})`);
+
     // Emit sources first so the frontend UI can display reference badges
     yield { type: 'sources', sources };
-
-    const project = options.project || 'visitflow';
-    const isCompliance = project === 'ski-compliance';
-    const lowerPrompt = userPrompt.toLowerCase();
 
     // 2. Pre-fetch Live Database Tools / Statistics
     let toolResultsBlock = '';
