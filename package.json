@@ -14,7 +14,8 @@
     "dotenv": "^16.4.7",
     "highlight.js": "^11.11.1",
     "lucide-svelte": "^0.477.0",
-    "marked": "^15.0.7"
+    "marked": "^15.0.7",
+    "mysql2": "^3.24.5"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.2.12",

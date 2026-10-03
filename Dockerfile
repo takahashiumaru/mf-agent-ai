@@ -23,6 +23,9 @@ ENV PORT=3000
 ENV HOST=0.0.0.0
 ENV AGENT_MODE=api
 
+# Install mysql client utilities
+RUN apk add --no-cache mariadb-client
+
 # Copy package files and install production dependencies only
 COPY package*.json ./
 RUN npm ci --omit=dev

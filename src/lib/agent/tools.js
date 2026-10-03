@@ -70,13 +70,45 @@ export async function executeGetDoctors(params = {}) {
 
 import { exec } from 'node:child_process';
 import { promisify } from 'node:util';
+import mysql from 'mysql2/promise';
+
 const execAsync = promisify(exec);
 
+let poolCache = new Map();
+
+function getDbPool(database) {
+  if (poolCache.has(database)) return poolCache.get(database);
+
+  const host = process.env.MYSQL_HOST || '103.24.106.204';
+  const port = parseInt(process.env.MYSQL_PORT || '5721', 10);
+  const user = process.env.MYSQL_USER;
+  const password = process.env.MYSQL_PASSWORD;
+
+  if (!user || !password) return null;
+
+  try {
+    const pool = mysql.createPool({
+      host,
+      port,
+      user,
+      password,
+      database,
+      waitForConnections: true,
+      connectionLimit: 5,
+      queueLimit: 0,
+      connectTimeout: 10000
+    });
+    poolCache.set(database, pool);
+    return pool;
+  } catch (e) {
+    console.warn('[Tool SafeDbQuery] Pool creation warning:', e.message);
+    return null;
+  }
+}
+
 /**
- * Safely executes read-only SELECT queries to VisitFlow or SKI MySQL DB
- * @param {string} sqlQuery 
- * @param {Object} options
- * @returns {Promise<any>}
+ * Resolves target database name for project
+ */
 export function getDatabaseForProject(project = 'visitflow', explicitDb = null) {
   if (explicitDb) return explicitDb;
   if (project === 'ski-compliance') {
@@ -106,7 +138,18 @@ export async function executeSafeDbQuery(sqlQuery, options = {}) {
     return { error: 'Operasi dibatalkan: Dilarang keras mengeksekusi DML/DDL (UPDATE, DELETE, ALTER, DROP, INSERT, dll). Sistem hanya beroperasi dalam mode Read-Only.', success: false };
   }
 
-  // Try local MySQL login-path first (preferred), then fallback to direct env
+  // 3. Primary: Try native mysql2 connection pool (pure JavaScript, no CLI dependency)
+  const pool = getDbPool(database);
+  if (pool) {
+    try {
+      const [rows] = await pool.query(sanitized);
+      return { success: true, data: Array.isArray(rows) ? rows : [rows] };
+    } catch (poolErr) {
+      console.warn('[Tool SafeDbQuery] mysql2 query failed, falling back to CLI:', poolErr.message);
+    }
+  }
+
+  // 4. Secondary: Try local MySQL login-path (if mysql client is installed)
   const command = `mysql --login-path=visitflow-production-readonly --database=${database} -e "START TRANSACTION READ ONLY; ${sanitized}; COMMIT;"`;
 
   try {
