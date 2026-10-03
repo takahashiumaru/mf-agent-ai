@@ -1,0 +1,47 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: SSH Deploy & Run
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_KEY }}
+          passphrase: ${{ secrets.SSH_PASSPHRASE }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: ${{ secrets.SSH_PORT || 22 }}
+          script: |
+            set -e
+
+            # 1. Cek jika folder repo belum ada, lakukan clone otomatis
+            if [ ! -d "mf-agent-ai" ]; then
+              echo "==> Folder mf-agent-ai tidak ditemukan di server. Melakukan git clone..."
+              git clone https://github.com/takahashiumaru/mf-agent-ai.git
+              cd mf-agent-ai
+
+              # Buat .env default jika belum ada
+              if [ ! -f ".env" ] && [ -f ".env.example" ]; then
+                cp .env.example .env
+                echo "==> File .env telah disiapkan dari .env.example"
+              fi
+            else
+              echo "==> Folder mf-agent-ai sudah ada. Mengambil update terbaru (git pull)..."
+              cd mf-agent-ai
+              git pull origin main
+            fi
+
+            # 2. Build dan jalankan container
+            echo "==> Menjalankan Docker Compose..."
+            docker compose up -d --build
+
+            echo "==> ✅ Deploy selesai dan container aktif!"
