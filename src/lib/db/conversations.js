@@ -1,118 +1,127 @@
-import { getDb } from './client.js';
+import { getDbStore } from './client.js';
 
 export function createConversation(id, title = 'Percakapan Baru') {
-  const db = getDb();
+  const store = getDbStore();
+  const data = store.get();
   const now = new Date().toISOString();
-  const stmt = db.prepare(`
-    INSERT INTO conversations (id, title, created_at, updated_at)
-    VALUES (?, ?, ?, ?)
-  `);
-  stmt.run(id, title, now, now);
-  return { id, title, created_at: now, updated_at: now };
+  
+  const newConv = { id, title, created_at: now, updated_at: now };
+  data.conversations = data.conversations || [];
+  data.conversations.push(newConv);
+  store.save(data);
+  return newConv;
 }
 
 export function getConversations() {
-  const db = getDb();
-  const stmt = db.prepare(`
-    SELECT c.*, 
-      (SELECT content FROM messages WHERE conversation_id = c.id ORDER BY created_at ASC LIMIT 1) as first_message,
-      (SELECT COUNT(*) FROM messages WHERE conversation_id = c.id) as message_count
-    FROM conversations c
-    ORDER BY updated_at DESC
-  `);
-  return stmt.all();
+  const store = getDbStore();
+  const data = store.get();
+  const conversations = data.conversations || [];
+  const messages = data.messages || [];
+
+  return conversations
+    .map(c => {
+      const msgs = messages.filter(m => m.conversation_id === c.id);
+      const sorted = [...msgs].sort((a, b) => a.created_at.localeCompare(b.created_at));
+      const firstMsg = sorted[0];
+      return {
+        ...c,
+        first_message: firstMsg ? firstMsg.content : '',
+        message_count: msgs.length
+      };
+    })
+    .sort((a, b) => b.updated_at.localeCompare(a.updated_at));
 }
 
 export function getConversationById(id) {
-  const db = getDb();
-  const stmt = db.prepare('SELECT * FROM conversations WHERE id = ?');
-  const conv = stmt.all(id)[0];
-  if (!conv) return null;
-  return conv;
+  const store = getDbStore();
+  const data = store.get();
+  const conversations = data.conversations || [];
+  return conversations.find(c => c.id === id) || null;
 }
 
 export function updateConversationTitle(id, title) {
-  const db = getDb();
+  const store = getDbStore();
+  const data = store.get();
   const now = new Date().toISOString();
-  const stmt = db.prepare(`
-    UPDATE conversations 
-    SET title = ?, updated_at = ?
-    WHERE id = ?
-  `);
-  stmt.run(title, now, id);
-  return { id, title, updated_at: now };
+  const conversations = data.conversations || [];
+  
+  const conv = conversations.find(c => c.id === id);
+  if (conv) {
+    conv.title = title;
+    conv.updated_at = now;
+    store.save(data);
+    return { id, title, updated_at: now };
+  }
+  return null;
 }
 
 export function touchConversation(id) {
-  const db = getDb();
+  const store = getDbStore();
+  const data = store.get();
   const now = new Date().toISOString();
-  const stmt = db.prepare(`
-    UPDATE conversations 
-    SET updated_at = ?
-    WHERE id = ?
-  `);
-  stmt.run(now, id);
+  const conversations = data.conversations || [];
+  
+  const conv = conversations.find(c => c.id === id);
+  if (conv) {
+    conv.updated_at = now;
+    store.save(data);
+  }
 }
 
 export function deleteConversation(id) {
-  const db = getDb();
-  const stmt = db.prepare('DELETE FROM conversations WHERE id = ?');
-  stmt.run(id);
+  const store = getDbStore();
+  const data = store.get();
+  
+  data.conversations = (data.conversations || []).filter(c => c.id !== id);
+  data.messages = (data.messages || []).filter(m => m.conversation_id !== id);
+  store.save(data);
   return { success: true };
 }
 
 export function deleteAllConversations() {
-  const db = getDb();
-  db.prepare('DELETE FROM messages').run();
-  db.prepare('DELETE FROM conversations').run();
+  const store = getDbStore();
+  const data = { conversations: [], messages: [] };
+  store.save(data);
   return { success: true };
 }
 
 export function addMessage(id, conversationId, role, content, sources = null) {
-  const db = getDb();
+  const store = getDbStore();
+  const data = store.get();
   const now = new Date().toISOString();
-  const sourcesJson = sources ? JSON.stringify(sources) : null;
-  
-  const stmt = db.prepare(`
-    INSERT INTO messages (id, conversation_id, role, content, sources, created_at)
-    VALUES (?, ?, ?, ?, ?, ?)
-  `);
-  stmt.run(id, conversationId, role, content, sourcesJson, now);
-  
-  touchConversation(conversationId);
-  
-  return {
+
+  data.conversations = data.conversations || [];
+  data.messages = data.messages || [];
+
+  const msg = {
     id,
     conversation_id: conversationId,
     role,
     content,
-    sources,
+    sources: sources || null,
     created_at: now
   };
+
+  data.messages.push(msg);
+  
+  // Touch conversation updated_at
+  const conv = data.conversations.find(c => c.id === conversationId);
+  if (conv) {
+    conv.updated_at = now;
+  }
+
+  store.save(data);
+  return msg;
 }
 
 export function getMessagesByConversationId(conversationId) {
-  const db = getDb();
-  const stmt = db.prepare(`
-    SELECT * FROM messages 
-    WHERE conversation_id = ? 
-    ORDER BY created_at ASC, rowid ASC
-  `);
-  const rows = stmt.all(conversationId);
-  return rows.map(row => {
-    let parsedSources = null;
-    if (row.sources) {
-      try {
-        parsedSources = JSON.parse(row.sources);
-      } catch (e) {
-        parsedSources = null;
-      }
-    }
-    return {
-      ...row,
-      sources: parsedSources
-    };
-  });
+  const store = getDbStore();
+  const data = store.get();
+  const messages = data.messages || [];
+  
+  return messages
+    .filter(m => m.conversation_id === conversationId)
+    .sort((a, b) => a.created_at.localeCompare(b.created_at));
 }
 
 /**
