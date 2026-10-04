@@ -10,8 +10,34 @@ markedInstance.setOptions({
   pedantic: false
 });
 
-// Custom renderer for code blocks to add header + copy button
+// Custom renderer for code blocks and tables to ensure mobile scrollability
 const renderer = {
+  table(token) {
+    let header = '';
+    let cell = '';
+    for (let j = 0; j < token.header.length; j++) {
+      cell += this.tablecell(token.header[j]);
+    }
+    header += this.tablerow({ text: cell });
+    let body = '';
+    for (let j = 0; j < token.rows.length; j++) {
+      const row = token.rows[j];
+      cell = '';
+      for (let k = 0; k < row.length; k++) {
+        cell += this.tablecell(row[k]);
+      }
+      body += this.tablerow({ text: cell });
+    }
+    if (body) body = `<tbody>${body}</tbody>`;
+    return `
+      <div class="table-responsive-container">
+        <table>
+          <thead>${header}</thead>
+          ${body}
+        </table>
+      </div>
+    `;
+  },
   code({ text, lang }) {
     const validLang = lang && hljs.getLanguage(lang) ? lang : '';
     let highlighted = text;

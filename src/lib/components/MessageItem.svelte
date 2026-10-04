@@ -119,10 +119,20 @@
 <style>
   .message-row {
     width: 100%;
-    max-width: 820px;
+    max-width: 860px;
     margin: 0 auto;
     padding: 0.75rem 1.25rem;
     display: flex;
+    box-sizing: border-box;
+  }
+
+  @media (max-width: 640px) {
+    .message-row {
+      padding: 0.6rem 0.75rem;
+    }
+    .assistant-container {
+      gap: 0.6rem;
+    }
   }
 
   .message-row.user {

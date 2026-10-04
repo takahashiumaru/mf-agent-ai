@@ -366,42 +366,43 @@
 
       <!-- DONUT CHART -->
       {:else if chart.type === 'donut'}
-        <circle cx="180" cy="195" r="80" fill="none" stroke="var(--border-subtle)" stroke-width="34" />
+        {@const donutY = (chart.labels || []).length > 8 ? 160 : 195}
+        <circle cx="170" cy={donutY} r="75" fill="none" stroke="var(--border-subtle)" stroke-width="32" />
         {#each chart.values as value, index}
           {@const share = total > 0 ? (value / total) * 100 : 0}
           {@const offset = total > 0 ? (chart.values.slice(0, index).reduce((sum, item) => sum + item, 0) / total) * 100 : 0}
           <circle 
-            cx="180" 
-            cy="195" 
-            r="80" 
+            cx="170" 
+            cy={donutY} 
+            r="75" 
             pathLength="100" 
             fill="none" 
             stroke={colors[index % colors.length]} 
-            stroke-width="34" 
+            stroke-width="32" 
             stroke-dasharray="{share} {100 - share}" 
             stroke-dashoffset={-offset} 
-            transform="rotate(-90 180 195)"
+            transform="rotate(-90 170 {donutY})"
           >
             <title>{chart.labels[index]}: {formatWord(value, chart.unit)} ({share.toFixed(1)}%)</title>
           </circle>
 
-          <!-- Legend item on right -->
-          <g transform="translate(320, {index * 28 + 90})">
-            <rect x="0" y="0" width="10" height="10" rx="3" fill={colors[index % colors.length]} />
-            <text x="18" y="10" font-size="12" font-weight="600" fill="var(--text-primary)">
-              {short(chart.labels[index], 24)}
+          <!-- Legend item on right with responsive coordinate bounds -->
+          <g transform="translate(305, {index * 26 + 82})">
+            <rect x="0" y="0" width="9" height="9" rx="2.5" fill={colors[index % colors.length]} />
+            <text x="16" y="9" font-size="11.5" font-weight="600" fill="var(--text-primary)">
+              {short(chart.labels[index], 20)}
             </text>
-            <text x="400" y="10" text-anchor="end" font-size="12" font-weight="700" fill="#38bdf8">
-              {formatWord(value, chart.unit)} <tspan font-weight="400" font-size="10.5" fill="var(--text-muted)">({share.toFixed(1)}%)</tspan>
+            <text x="415" y="9" text-anchor="end" font-size="11.5" font-weight="700" fill="#38bdf8">
+              {formatWord(value, chart.unit)} <tspan font-weight="400" font-size="10" fill="var(--text-muted)">({share.toFixed(1)}%)</tspan>
             </text>
           </g>
         {/each}
 
         <!-- Center Total Text -->
-        <text x="180" y="190" text-anchor="middle" font-size="20" font-weight="700" fill="var(--text-primary)">
+        <text x="170" y={donutY - 5} text-anchor="middle" font-size="18" font-weight="700" fill="var(--text-primary)">
           {formatCompact(total, chart.unit)}
         </text>
-        <text x="180" y="210" text-anchor="middle" font-size="10.5" font-weight="600" fill="var(--text-muted)">
+        <text x="170" y={donutY + 14} text-anchor="middle" font-size="10" font-weight="600" fill="var(--text-muted)">
           TOTAL
         </text>
 
@@ -563,51 +564,52 @@
   }
 
   .stat-summary-bar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    padding: 10px 16px;
-    background: rgba(56, 189, 248, 0.04);
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--surface-tint);
     border-bottom: 1px solid var(--border-subtle);
   }
 
   .stat-pill {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    padding: 4px 10px;
-    background: rgba(15, 23, 42, 0.6);
-    border: 1px solid var(--border-subtle);
-    border-radius: 6px;
+    gap: 3px;
+    padding: 6px 12px;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-sm);
   }
 
   .stat-label {
-    font-size: 9px;
+    font-size: 10px;
     font-weight: 700;
     letter-spacing: 0.05em;
-    color: var(--text-muted);
+    color: var(--text-secondary);
   }
 
   .stat-val {
-    font-size: 13px;
+    font-size: 13.5px;
     font-weight: 700;
     color: var(--text-primary);
   }
 
   .stat-val.highlight {
-    color: #38bdf8;
+    color: var(--accent-primary);
   }
 
   .stat-val.success {
-    color: #10b981;
+    color: var(--accent-emerald);
   }
 
   .stat-val.warning {
-    color: #fbbf24;
+    color: var(--accent-amber);
   }
 
   .stat-val small {
-    font-size: 10px;
+    font-size: 10.5px;
     font-weight: 500;
     color: var(--text-muted);
   }
@@ -739,6 +741,50 @@
     border-bottom: none;
     font-size: 12px;
     font-weight: 700;
+  }
+
+  @media (max-width: 640px) {
+    .visualization {
+      margin: 12px 0;
+      border-radius: 8px;
+    }
+
+    .chart-toolbar {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+
+    .export-actions {
+      width: 100%;
+      justify-content: flex-end;
+    }
+
+    .stat-summary-bar {
+      padding: 8px 10px;
+      gap: 6px;
+    }
+
+    .stat-pill {
+      flex: 1 1 calc(50% - 6px);
+      min-width: 110px;
+      padding: 4px 8px;
+    }
+
+    .stat-val {
+      font-size: 11.5px;
+    }
+
+    .chart-scroll {
+      padding: 4px 6px 4px;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    figcaption, .chart-source, .export-error, .data-details {
+      padding-left: 12px;
+      padding-right: 12px;
+    }
   }
 
   .flow-list { 

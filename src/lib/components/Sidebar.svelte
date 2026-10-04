@@ -266,6 +266,9 @@
               onkeydown={(e) => e.key === 'Enter' && onSelectConversation(conv.id)}
             >
               <span class="item-title" title={conv.title}>{conv.title}</span>
+              <span class="item-project-badge {conv.project === 'ski-compliance' ? 'ski' : 'vf'}">
+                {conv.project === 'ski-compliance' ? 'SKI' : 'VF'}
+              </span>
 
               <!-- Hover Menu Button -->
               <div class="item-menu-container">
@@ -747,6 +750,28 @@
     overflow: hidden;
     text-overflow: ellipsis;
     padding-right: 0.3rem;
+  }
+
+  .item-project-badge {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 600;
+    padding: 0.05rem 0.25rem;
+    border-radius: 3px;
+    margin-right: 0.25rem;
+    flex-shrink: 0;
+  }
+
+  .item-project-badge.vf {
+    background: rgba(58, 194, 219, 0.12);
+    color: #3ac2db;
+    border: 1px solid rgba(58, 194, 219, 0.25);
+  }
+
+  .item-project-badge.ski {
+    background: rgba(56, 189, 248, 0.12);
+    color: #38bdf8;
+    border: 1px solid rgba(56, 189, 248, 0.25);
   }
 
   .item-menu-container {

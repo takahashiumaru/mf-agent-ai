@@ -214,9 +214,10 @@
   .input-disclaimer {
     margin-top: 8px;
     font-size: 11px;
-    color: var(--text-dim);
+    color: var(--text-secondary);
     text-align: center;
     letter-spacing: -0.01em;
+    font-weight: 500;
   }
 
   @media (max-width: 1100px) {

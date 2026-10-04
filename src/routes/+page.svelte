@@ -44,6 +44,9 @@
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('visitflow-active-project', projId);
     }
+    // Switch conversation scope to new project
+    startNewChat();
+    loadConversations(projId);
     toast.success(`Beralih ke project ${projId === 'ski-compliance' ? 'Ski Compliance' : 'VisitFlow'}`);
   }
 
@@ -62,9 +65,10 @@
     }
   });
 
-  async function loadConversations() {
+  async function loadConversations(projectFilter = activeProject) {
     try {
-      const res = await fetch('/api/conversations');
+      const url = projectFilter ? `/api/conversations?project=${encodeURIComponent(projectFilter)}` : '/api/conversations';
+      const res = await fetch(url);
       const data = await res.json();
       if (data.success) {
         conversations = data.conversations || [];
@@ -171,7 +175,8 @@
 
   async function confirmClearAll() {
     try {
-      const res = await fetch('/api/conversations', { method: 'DELETE' });
+      const url = activeProject ? `/api/conversations?project=${encodeURIComponent(activeProject)}` : '/api/conversations';
+      const res = await fetch(url, { method: 'DELETE' });
       const data = await res.json();
       if (data.success) {
         conversations = [];
@@ -354,13 +359,28 @@
     }
   }
 
+  function handleSelectModel(m) {
+    activeModel = m;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mf-active-model', m);
+    }
+  }
+
   onMount(() => {
     isSidebarOpen = window.matchMedia('(min-width: 769px)').matches;
+    let initialProject = activeProject;
     if (typeof localStorage !== 'undefined') {
       const savedProj = localStorage.getItem('visitflow-active-project');
-      if (savedProj) activeProject = savedProj;
+      if (savedProj) {
+        activeProject = savedProj;
+        initialProject = savedProj;
+      }
+      const savedModel = localStorage.getItem('mf-active-model');
+      if (savedModel) {
+        activeModel = savedModel;
+      }
     }
-    loadConversations();
+    loadConversations(initialProject);
     window.addEventListener('keydown', handleKeydownGlobal);
     return () => {
       window.removeEventListener('keydown', handleKeydownGlobal);
@@ -392,7 +412,7 @@
       {activeModel}
       {isSidebarOpen}
       onToggleSidebar={() => isSidebarOpen = !isSidebarOpen}
-      onSelectModel={(m) => activeModel = m}
+      onSelectModel={handleSelectModel}
     />
 
     <!-- Messages Container -->
@@ -544,14 +564,14 @@
     overflow-x: hidden;
     display: flex;
     flex-direction: column;
-    padding: 0.5rem 0 1.5rem 0;
+    padding: 0.5rem 0 0 0;
   }
 
   .messages-list {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    padding-bottom: 2rem;
+    padding-bottom: 7rem;
   }
 
   /* Thinking Indicator */

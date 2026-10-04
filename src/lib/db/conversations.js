@@ -1,22 +1,26 @@
 import { getDbStore } from './client.js';
 
-export function createConversation(id, title = 'Percakapan Baru') {
+export function createConversation(id, title = 'Percakapan Baru', project = 'visitflow') {
   const store = getDbStore();
   const data = store.get();
   const now = new Date().toISOString();
   
-  const newConv = { id, title, created_at: now, updated_at: now };
+  const newConv = { id, title, project: project || 'visitflow', created_at: now, updated_at: now };
   data.conversations = data.conversations || [];
   data.conversations.push(newConv);
   store.save(data);
   return newConv;
 }
 
-export function getConversations() {
+export function getConversations(projectFilter = null) {
   const store = getDbStore();
   const data = store.get();
-  const conversations = data.conversations || [];
+  const rawConversations = data.conversations || [];
   const messages = data.messages || [];
+
+  const conversations = projectFilter
+    ? rawConversations.filter(c => (c.project || 'visitflow') === projectFilter)
+    : rawConversations;
 
   return conversations
     .map(c => {
@@ -25,6 +29,7 @@ export function getConversations() {
       const firstMsg = sorted[0];
       return {
         ...c,
+        project: c.project || 'visitflow',
         first_message: firstMsg ? firstMsg.content : '',
         message_count: msgs.length
       };
@@ -78,9 +83,20 @@ export function deleteConversation(id) {
   return { success: true };
 }
 
-export function deleteAllConversations() {
+export function deleteAllConversations(projectFilter = null) {
   const store = getDbStore();
-  const data = { conversations: [], messages: [] };
+  const data = store.get();
+  if (projectFilter) {
+    const idsToRemove = (data.conversations || [])
+      .filter(c => (c.project || 'visitflow') === projectFilter)
+      .map(c => c.id);
+    const idSet = new Set(idsToRemove);
+    data.conversations = (data.conversations || []).filter(c => !idSet.has(c.id));
+    data.messages = (data.messages || []).filter(m => !idSet.has(m.conversation_id));
+  } else {
+    data.conversations = [];
+    data.messages = [];
+  }
   store.save(data);
   return { success: true };
 }

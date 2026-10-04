@@ -27,12 +27,12 @@ export async function POST({ request }) {
     // Ensure conversation exists
     if (!conversationId) {
       conversationId = crypto.randomUUID();
-      createConversation(conversationId, 'Percakapan Baru');
+      createConversation(conversationId, 'Percakapan Baru', project);
       isNewConversation = true;
     } else {
       const existing = getConversationById(conversationId);
       if (!existing) {
-        createConversation(conversationId, 'Percakapan Baru');
+        createConversation(conversationId, 'Percakapan Baru', project);
         isNewConversation = true;
       }
     }

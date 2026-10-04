@@ -19,6 +19,9 @@
     return formatModelName(id);
   }
   function handleModelChange(id) {
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('mf-active-model', id);
+    }
     onSelectModel(id);
     showModelDropdown = false;
   }
