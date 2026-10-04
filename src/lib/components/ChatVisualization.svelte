@@ -507,7 +507,7 @@
     border-radius: 12px; 
     background: var(--bg-surface); 
     overflow: hidden; 
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-md);
   }
   
   .chart-toolbar { 
@@ -516,7 +516,7 @@
     justify-content: space-between; 
     gap: 10px; 
     padding: 10px 16px; 
-    background: rgba(18, 24, 36, 0.5);
+    background: var(--surface-tint);
     border-bottom: 1px solid var(--border-subtle); 
     color: var(--text-secondary); 
     font-size: 11.5px; 
@@ -531,7 +531,7 @@
   }
 
   :global(.tool-icon) {
-    color: #38bdf8;
+    color: var(--accent-primary);
   }
 
   .export-actions { 
@@ -547,16 +547,18 @@
     border-radius: 6px; 
     padding: 4px 9px; 
     font-size: 11px; 
-    font-weight: 500;
+    font-weight: 600;
     background: var(--bg-surface);
     color: var(--text-primary); 
     cursor: pointer;
+    box-shadow: var(--shadow-sm);
     transition: all 0.15s ease;
   }
   
   .export-actions button:hover { 
     background: var(--bg-surface-hover); 
-    border-color: #38bdf8;
+    border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
   
   .export-actions button:disabled { 
@@ -576,7 +578,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
-    padding: 6px 12px;
+    padding: 8px 12px;
     background: var(--bg-surface);
     border: 1px solid var(--border-medium);
     border-radius: var(--radius-sm);
@@ -616,7 +618,8 @@
 
   .chart-scroll { 
     overflow-x: auto; 
-    padding: 8px 12px 4px;
+    padding: 12px 14px 8px;
+    background: var(--bg-surface);
   }
   
   svg { 
@@ -647,7 +650,7 @@
     border-top: 1px solid var(--border-subtle); 
     padding: 10px 16px; 
     font-size: 12px; 
-    background: rgba(18, 24, 36, 0.2);
+    background: var(--surface-tint);
   }
   
   summary { 

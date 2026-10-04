@@ -78,16 +78,27 @@
     }
   }
 
-  async function selectConversation(id) {
+  async function selectConversation(id, updateUrl = true) {
     if (isStreaming) return;
     if (window.matchMedia('(max-width: 768px)').matches) isSidebarOpen = false;
     activeId = id;
+    if (updateUrl && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.set('c', id);
+      window.history.pushState({ conversationId: id }, '', url.toString());
+    }
     try {
       const res = await fetch(`/api/conversations/${id}`);
       const data = await res.json();
       if (data.success) {
         activeConversation = data.conversation;
         messages = data.messages || [];
+        if (data.conversation?.project && data.conversation.project !== activeProject) {
+          activeProject = data.conversation.project;
+          if (typeof localStorage !== 'undefined') {
+            localStorage.setItem('visitflow-active-project', activeProject);
+          }
+        }
         await tick();
         scrollToBottom(true);
       }
@@ -96,7 +107,7 @@
     }
   }
 
-  function startNewChat() {
+  function startNewChat(updateUrl = true) {
     if (isStreaming) return;
     if (window.matchMedia('(max-width: 768px)').matches) isSidebarOpen = false;
     activeId = null;
@@ -105,6 +116,11 @@
     currentStreamingText = '';
     currentStreamingSources = [];
     lastFailedPrompt = '';
+    if (updateUrl && typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      url.searchParams.delete('c');
+      window.history.pushState({}, '', url.toString());
+    }
   }
 
   function handleRequestRename(conv) {
@@ -283,6 +299,11 @@
                 if (parsed.conversationId) {
                   activeId = parsed.conversationId;
                   activeConversation = { id: parsed.conversationId, title: parsed.title };
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('c', parsed.conversationId);
+                    window.history.replaceState({ conversationId: parsed.conversationId }, '', url.toString());
+                  }
                   loadConversations();
                 }
               } else if (currentEvent === 'delta') {
@@ -293,6 +314,11 @@
               } else if (currentEvent === 'done') {
                 if (parsed.conversationId) {
                   activeId = parsed.conversationId;
+                  if (typeof window !== 'undefined') {
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('c', parsed.conversationId);
+                    window.history.replaceState({ conversationId: parsed.conversationId }, '', url.toString());
+                  }
                 }
                 const assistantMsg = {
                   id: parsed.id || 'asst-' + Date.now(),
@@ -381,6 +407,27 @@
       }
     }
     loadConversations(initialProject);
+
+    // Deep link support: /?c=<conversationId>
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href);
+      const convParam = url.searchParams.get('c');
+      if (convParam) {
+        selectConversation(convParam, false);
+      }
+
+      const handlePopState = (e) => {
+        const currentUrl = new URL(window.location.href);
+        const currentId = currentUrl.searchParams.get('c');
+        if (currentId) {
+          selectConversation(currentId, false);
+        } else {
+          startNewChat(false);
+        }
+      };
+      window.addEventListener('popstate', handlePopState);
+    }
+
     window.addEventListener('keydown', handleKeydownGlobal);
     return () => {
       window.removeEventListener('keydown', handleKeydownGlobal);
