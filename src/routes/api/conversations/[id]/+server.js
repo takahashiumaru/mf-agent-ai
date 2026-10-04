@@ -1,4 +1,5 @@
 import { json } from '@sveltejs/kit';
+import { normalizeConversationTitle } from '$lib/utils/conversation-title.js';
 import { 
   getConversationById, 
   getMessagesByConversationId, 
@@ -22,10 +23,11 @@ export async function GET({ params }) {
 export async function PATCH({ params, request }) {
   try {
     const body = await request.json();
-    if (!body.title) {
+    const title = normalizeConversationTitle(body.title);
+    if (!title) {
       return json({ success: false, error: 'Title is required' }, { status: 400 });
     }
-    const updated = updateConversationTitle(params.id, body.title);
+    const updated = updateConversationTitle(params.id, title);
     return json({ success: true, conversation: updated });
   } catch (err) {
     return json({ success: false, error: err.message }, { status: 500 });

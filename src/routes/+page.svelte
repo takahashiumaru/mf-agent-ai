@@ -39,6 +39,7 @@
   let userScrolledUp = false;
 
   function handleSelectProject(projId) {
+    if (isStreaming) return;
     if (activeProject === projId) return;
     activeProject = projId;
     if (typeof localStorage !== 'undefined') {
