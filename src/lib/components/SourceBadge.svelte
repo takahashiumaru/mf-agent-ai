@@ -50,52 +50,61 @@
 
 <style>
   .sources-pill-row {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: 0.4rem;
-    margin-bottom: 0.75rem;
-    padding: 0.25rem 0.6rem;
+    gap: 0.5rem;
+    margin-bottom: 0.85rem;
+    padding: 0.35rem 0.65rem;
     background: var(--surface-tint);
     border: 1px solid var(--border-subtle);
-    border-radius: var(--radius-full);
+    border-radius: var(--radius-sm);
     font-size: 11.5px;
+    width: fit-content;
+    max-width: 100%;
   }
 
   .sources-label {
-    display: flex;
+    display: inline-flex;
     align-items: center;
-    gap: 0.3rem;
-    color: var(--text-muted);
-    font-weight: 500;
+    gap: 0.35rem;
+    color: var(--text-secondary);
+    font-weight: 600;
+    font-size: 11.5px;
+    flex-shrink: 0;
   }
 
   .sources-chips {
-    display: flex;
+    display: inline-flex;
     flex-wrap: wrap;
-    gap: 0.3rem;
+    gap: 0.35rem;
+    align-items: center;
   }
 
   .source-tag {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    padding: 0.1rem 0.45rem;
-    background: rgba(66, 108, 178, 0.12);
-    border: 1px solid rgba(58, 194, 219, 0.25);
-    border-radius: var(--radius-full);
+    gap: 0.3rem;
+    padding: 0.2rem 0.5rem;
+    background: var(--bg-surface);
+    border: 1px solid var(--border-medium);
+    border-radius: 5px;
     color: var(--accent-primary);
     font-family: var(--font-mono);
     font-size: 11px;
+    font-weight: 500;
+    box-shadow: var(--shadow-sm);
     transition: all 0.15s ease;
   }
 
   .source-tag:hover {
-    background: rgba(66, 108, 178, 0.2);
-    border-color: rgba(58, 194, 219, 0.45);
+    background: var(--surface-tint-hover);
+    border-color: var(--accent-primary);
+    color: var(--accent-primary-hover);
   }
 
   :global(.tag-icon) {
-    color: var(--accent-blue);
+    color: var(--accent-primary);
+    flex-shrink: 0;
   }
 </style>
