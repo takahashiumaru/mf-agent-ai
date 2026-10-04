@@ -110,7 +110,9 @@
   );
 
   function wrap(value) {
-    return value.match(/.{1,42}(?:\s|$)|\S{1,42}/g)?.map(line => line.trim()) || [value];
+    if (!value) return [''];
+    if (value.length <= 50) return [value];
+    return value.match(/.{1,48}(?:\s|$)|\S{1,48}/g)?.map(line => line.trim()).filter(Boolean) || [value];
   }
 
   async function download(format) {
@@ -409,24 +411,26 @@
       <!-- FLOW CHART -->
       {:else if chart.type === 'flow'}
         {#each chart.steps as step, index}
-          {@const yPos = index * 88 + 80}
-          <rect x="150" y={yPos} width="460" height="60" rx="10" fill="var(--bg-surface-hover)" stroke="rgba(56, 189, 248, 0.3)" stroke-width="1.2" />
+          {@const lines = wrap(step)}
+          {@const cardH = Math.max(60, lines.length * 20 + 26)}
+          {@const yPos = index * 92 + 80}
+          <rect x="110" y={yPos} width="540" height={cardH} rx="10" fill="var(--bg-surface-hover)" stroke="rgba(56, 189, 248, 0.35)" stroke-width="1.2" />
           
           <!-- Step Badge -->
-          <rect x="165" y={yPos + 18} width="26" height="24" rx="6" fill="#2563eb" />
-          <text x="178" y={yPos + 34} text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">
+          <rect x="125" y={yPos + 18} width="26" height="24" rx="6" fill="#2563eb" />
+          <text x="138" y={yPos + 34} text-anchor="middle" font-size="11" font-weight="700" fill="#ffffff">
             {index + 1}
           </text>
 
-          <text x="205" y={yPos + 35} font-size="12.5" font-weight="600" fill="var(--text-primary)">
-            {#each wrap(step) as line, lineIndex}
-              <tspan x="205" dy={lineIndex ? 16 : 0}>{line}</tspan>
+          <text x="165" y={yPos + (lines.length > 1 ? 26 : 34)} font-size="12" font-weight="600" fill="var(--text-primary)">
+            {#each lines as line, lineIndex}
+              <tspan x="165" dy={lineIndex ? 18 : 0}>{line}</tspan>
             {/each}
           </text>
           
           {#if index < chart.steps.length - 1}
-            <line x1="380" x2="380" y1={yPos + 60} y2={yPos + 80} stroke="#38bdf8" stroke-width="2" />
-            <polygon points="376,{yPos + 75} 384,{yPos + 75} 380,{yPos + 80}" fill="#38bdf8" />
+            <line x1="380" x2="380" y1={yPos + cardH} y2={yPos + cardH + 18} stroke="#38bdf8" stroke-width="2" />
+            <polygon points="376,{yPos + cardH + 13} 384,{yPos + cardH + 13} 380,{yPos + cardH + 18}" fill="#38bdf8" />
           {/if}
         {/each}
       {/if}
