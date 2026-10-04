@@ -48,6 +48,6 @@ jobs:
 
             # 2. Build dan jalankan container
             echo "==> Menjalankan Docker Compose di $TARGET_DIR..."
-            docker compose up -d --build
+            docker compose up -d --build --remove-orphans
 
             echo "==> ✅ Deploy selesai dan container aktif di /home/ubuntu/mf-agent-ai!"
