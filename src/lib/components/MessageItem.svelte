@@ -62,14 +62,6 @@
   {:else}
     <!-- Assistant Message (Spacious left-aligned layout) -->
     <div class="assistant-container">
-      <div class="assistant-avatar {isCompliance ? 'ski' : 'vf'}">
-        <img 
-          src={isCompliance ? '/ski.png' : '/logo.svg'} 
-          alt={isCompliance ? 'SKI' : 'VF'} 
-          class="avatar-logo-img" 
-        />
-      </div>
-
       <div class="assistant-content">
         <div class="assistant-header">
           <span class="assistant-name">{isCompliance ? 'Ski Compliance AI' : 'VisitFlow AI'}</span>
@@ -121,17 +113,17 @@
     width: 100%;
     max-width: 860px;
     margin: 0 auto;
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 1rem;
     display: flex;
     box-sizing: border-box;
   }
 
   @media (max-width: 640px) {
     .message-row {
-      padding: 0.6rem 0.75rem;
+      padding: 0.6rem 1rem;
     }
     .assistant-container {
-      gap: 0.6rem;
+      gap: 0;
     }
   }
 

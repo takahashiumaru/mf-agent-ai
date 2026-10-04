@@ -481,13 +481,6 @@
             {#if isThinking && !currentStreamingText}
               <div class="message-row assistant">
                 <div class="assistant-container">
-                  <div class="assistant-avatar {activeProject === 'ski-compliance' ? 'ski' : 'vf'}">
-                    <img 
-                      src={activeProject === 'ski-compliance' ? '/ski.png' : '/logo.svg'} 
-                      alt={activeProject === 'ski-compliance' ? 'SKI' : 'VF'} 
-                      class="avatar-logo-img" 
-                    />
-                  </div>
                   <div class="assistant-content">
                     <div class="thinking-state">
                       <div class="typing-dots">
@@ -624,15 +617,15 @@
   /* Thinking Indicator */
   .message-row {
     width: 100%;
-    max-width: 820px;
+    max-width: 860px;
     margin: 0 auto;
-    padding: 0.75rem 1.25rem;
+    padding: 0.75rem 1rem;
     display: flex;
   }
 
   .assistant-container {
     display: flex;
-    gap: 0.9rem;
+    gap: 0;
     width: 100%;
     align-items: center;
   }
