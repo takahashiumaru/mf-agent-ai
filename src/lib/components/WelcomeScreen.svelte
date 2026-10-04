@@ -207,12 +207,44 @@
   .explore-heading h2 { font-size: 13.5px; font-weight: 600; color: var(--text-primary); letter-spacing: -0.01em; }
   .explore-heading > span { color: var(--text-muted); font-size: 12px; }
   .suggestions { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .suggestion { display: flex; align-items: center; text-align: left; gap: 14px; padding: 18px; border: 1px solid var(--border-medium); border-radius: 12px; background: rgba(18, 24, 36, 0.3); transition: transform 240ms, background 240ms, border-color 240ms, box-shadow 240ms; animation: enter 650ms both; animation-delay: calc(150ms + var(--index) * 65ms); }
-  .suggestion:hover { transform: translateY(-2px); background: rgba(66, 108, 178, 0.12); border-color: rgba(58, 194, 219, 0.45); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 16px rgba(58, 194, 219, 0.1); }
-  .suggestion.ski:hover { background: rgba(37, 99, 235, 0.12); border-color: rgba(56, 189, 248, 0.55); box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25), 0 0 16px rgba(37, 99, 235, 0.2); }
+  .suggestion { 
+    display: flex; 
+    align-items: center; 
+    text-align: left; 
+    gap: 14px; 
+    padding: 16px 18px; 
+    border: 1px solid var(--border-medium); 
+    border-radius: 12px; 
+    background: var(--bg-surface); 
+    box-shadow: var(--shadow-sm);
+    transition: transform 200ms, background 200ms, border-color 200ms, box-shadow 200ms; 
+    animation: enter 650ms both; 
+    animation-delay: calc(150ms + var(--index) * 65ms); 
+  }
+  .suggestion:hover { 
+    transform: translateY(-2px); 
+    background: var(--surface-tint-hover); 
+    border-color: var(--accent-primary); 
+    box-shadow: var(--shadow-md); 
+  }
+  .suggestion.ski:hover { 
+    background: rgba(37, 99, 235, 0.08); 
+    border-color: var(--accent-primary); 
+    box-shadow: var(--shadow-md); 
+  }
   .suggestion:active { transform: translateY(0) scale(.985); }
-  .suggestion-icon { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--border-subtle); border-radius: 10px; color: var(--accent-primary); background: rgba(66, 108, 178, 0.15); flex-shrink: 0; }
-  .suggestion-icon.ski { color: #38bdf8; background: rgba(37, 99, 235, 0.18); border-color: rgba(56, 189, 248, 0.3); }
+  .suggestion-icon { 
+    display: grid; 
+    place-items: center; 
+    width: 38px; 
+    height: 38px; 
+    border: 1px solid var(--border-subtle); 
+    border-radius: 10px; 
+    color: var(--accent-primary); 
+    background: var(--surface-tint); 
+    flex-shrink: 0; 
+  }
+  .suggestion-icon.ski { color: #2563eb; background: rgba(37, 99, 235, 0.1); border-color: rgba(37, 99, 235, 0.2); }
   .suggestion-copy { display: flex; flex-direction: column; gap: 3px; flex: 1; }
   .suggestion-copy strong { font-size: 13.5px; font-weight: 600; color: var(--text-primary); }
   .suggestion-copy > span { font-size: 12px; line-height: 1.5; color: var(--text-secondary); }
