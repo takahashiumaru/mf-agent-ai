@@ -240,7 +240,7 @@
       display: none;
     }
     textarea {
-      font-size: 13.5px;
+      font-size: 16px;
     }
     .send-circle-btn {
       width: 32px;

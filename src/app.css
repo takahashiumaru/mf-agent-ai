@@ -260,6 +260,15 @@ textarea, input, select {
   font-size: 13.5px;
 }
 
+/* Prevent iOS Safari auto-zoom on form inputs */
+@media screen and (max-width: 768px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
+}
+
 .prose th, .prose td {
   padding: 0.65rem 0.95rem;
   text-align: left;
