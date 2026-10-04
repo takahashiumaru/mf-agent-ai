@@ -162,8 +162,8 @@
   }
 
   .user-bubble-text {
-    font-size: 14.5px;
-    line-height: 1.55;
+    font-size: 15.5px;
+    line-height: 1.58;
     white-space: pre-wrap;
   }
 
