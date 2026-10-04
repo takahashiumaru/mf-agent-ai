@@ -13,10 +13,12 @@
   "dependencies": {
     "@lucide/svelte": "^1.48.0",
     "dotenv": "^16.4.7",
+    "gsap": "^3.15.0",
     "highlight.js": "^11.11.1",
     "lucide-svelte": "^0.477.0",
     "marked": "^15.0.7",
-    "mysql2": "^3.24.5"
+    "mysql2": "^3.24.5",
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.2.12",
