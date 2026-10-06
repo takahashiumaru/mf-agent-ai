@@ -1,4 +1,4 @@
-name: CI
+name: CI & SonarCloud Analysis
 
 on:
   push:
@@ -7,12 +7,15 @@ on:
     branches: [ main, master ]
 
 jobs:
-  build-and-test:
+  build-test-and-sonar:
+    name: Build, Test & SonarCloud
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -28,3 +31,8 @@ jobs:
 
       - name: Build Application
         run: npm run build
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

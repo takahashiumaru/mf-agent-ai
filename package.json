@@ -9,8 +9,6 @@
     "preview": "vite preview",
     "test": "node --test 'src/**/*.test.js'",
     "start": "node build",
-    "sonar:up": "docker compose -f docker-compose.sonar.yml up -d",
-    "sonar:down": "docker compose -f docker-compose.sonar.yml down",
     "sonar:scan": "./scan-sonar.sh"
   },
   "dependencies": {
