@@ -1,0 +1,18 @@
+services:
+  sonarqube:
+    image: sonarqube:lts-community
+    container_name: mf-agent-ai-sonarqube-local
+    restart: unless-stopped
+    environment:
+      SONAR_SEARCH_JAVAADDITIONALOPTS: "-Xmx1024m -Xms512m"
+    ports:
+      - "9000:9000"
+    volumes:
+      - sonarqube_local_data:/opt/sonarqube/data
+      - sonarqube_local_extensions:/opt/sonarqube/extensions
+      - sonarqube_local_logs:/opt/sonarqube/logs
+
+volumes:
+  sonarqube_local_data:
+  sonarqube_local_extensions:
+  sonarqube_local_logs:
