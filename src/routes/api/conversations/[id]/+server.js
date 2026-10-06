@@ -28,6 +28,9 @@ export async function PATCH({ params, request }) {
       return json({ success: false, error: 'Title is required' }, { status: 400 });
     }
     const updated = updateConversationTitle(params.id, title);
+    if (!updated) {
+      return json({ success: false, error: 'Conversation not found' }, { status: 404 });
+    }
     return json({ success: true, conversation: updated });
   } catch (err) {
     return json({ success: false, error: err.message }, { status: 500 });
