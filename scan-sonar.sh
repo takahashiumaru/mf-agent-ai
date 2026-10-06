@@ -10,4 +10,4 @@ docker run --rm \
   sonarsource/sonar-scanner-cli:latest \
   -Dsonar.token="${SONAR_TOKEN}"
 
-echo "==> Scan selesai! Cek hasilnya di https://sonarcloud.io/project/overview?id=takahashiumaru_mf-agent-ai"
+echo "==> Scan selesai! Cek hasilnya di https://sonarcloud.io/project/overview?id=takahashiumaru_visitflow-agent-ai"
