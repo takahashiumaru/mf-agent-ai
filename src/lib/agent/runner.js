@@ -61,7 +61,7 @@ function extractDoctorSearchIntent(prompt) {
   }
 
   // Check for doctor name pattern
-  const nameMatch = prompt.match(/(?:nama|dr\.?|dokter)\s+([a-zA-Z\s]{3,30})/i);
+  const nameMatch = /(?:nama|dr\.?|dokter)\s+([a-zA-Z\s]{3,30})/i.exec(prompt);
   if (nameMatch) {
     const candidate = nameMatch[1].trim().replace(/^(yang|di|pada|dengan)\s+/i, '');
     if (candidate.length > 2) {
@@ -175,10 +175,10 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       // 1. Fetch SKI Payments from discount_proposal_payments
       if (isPaymentQuery) {
         try {
-          const periodMatch = userPrompt.match(/\b(202\d{3})\b/);
+          const periodMatch = /\b(202\d{3})\b/.exec(userPrompt);
           const specificPeriod = periodMatch ? periodMatch[1] : null;
           const paymentStats = await getSkiPayments({ period: specificPeriod, limit: 12 });
-          if (paymentStats && paymentStats.success && paymentStats.data && paymentStats.data.length > 0) {
+          if (paymentStats?.success && paymentStats?.data?.length > 0) {
             toolResultsBlock += `\n[DATA REALTIME SKI YANG SUDAH DITRANSFER (DARI TABEL discount_proposal_payments, DATABASE SKI_MF_PROD)]:\n` + JSON.stringify(paymentStats.data, null, 2);
           }
         } catch (err) {
@@ -189,10 +189,10 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       // 2. Fetch SKI Estimations from discount_proposal_estimations JOIN discount_proposals
       if (isEstimationQuery) {
         try {
-          const periodMatch = userPrompt.match(/\b(202\d{3})\b/);
+          const periodMatch = /\b(202\d{3})\b/.exec(userPrompt);
           const specificPeriod = periodMatch ? periodMatch[1] : null;
           const estimationStats = await getSkiEstimations({ period: specificPeriod, limit: 12 });
-          if (estimationStats && estimationStats.success && estimationStats.data && estimationStats.data.length > 0) {
+          if (estimationStats?.success && estimationStats?.data?.length > 0) {
             toolResultsBlock += `\n[DATA REALTIME ESTIMASI SKI YANG DI-APPROVE (DARI TABEL discount_proposal_estimations JOIN discount_proposals, DATABASE SKI_MF_PROD)]:\n` + JSON.stringify(estimationStats.data, null, 2);
           }
         } catch (err) {
@@ -203,10 +203,10 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       // 3. Fetch Credit Notes / SPC from dedicated table credit_notes
       if (isSpcQuery) {
         try {
-          const periodMatch = userPrompt.match(/\b(202\d{3})\b/);
+          const periodMatch = /\b(202\d{3})\b/.exec(userPrompt);
           const specificPeriod = periodMatch ? periodMatch[1] : null;
           const spcStats = await getSkiCreditNotes({ period: specificPeriod, limit: 12 });
-          if (spcStats && spcStats.success && spcStats.data && spcStats.data.length > 0) {
+          if (spcStats?.success && spcStats?.data?.length > 0) {
             toolResultsBlock += `\n[DATA REALTIME TRANSAKSI CREDIT NOTES (CN / SPC) DARI TABEL credit_notes (DATABASE SKI_MF_PROD)]:\n` + JSON.stringify(spcStats.data, null, 2);
           }
         } catch (err) {
@@ -217,10 +217,10 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       // 4. Fetch Sales Field Force statistics from sales_ffs
       if (isSalesQuery || (isGeneralOverview && !isSpcQuery && !isPaymentQuery && !isEstimationQuery)) {
         try {
-          const periodMatch = userPrompt.match(/\b(202\d{3})\b/);
+          const periodMatch = /\b(202\d{3})\b/.exec(userPrompt);
           const specificPeriod = periodMatch ? periodMatch[1] : null;
           const salesStats = await getSkiSalesStatistics({ period: specificPeriod, limit: 12 });
-          if (salesStats && salesStats.success && salesStats.data && salesStats.data.length > 0) {
+          if (salesStats?.success && salesStats?.data?.length > 0) {
             toolResultsBlock += `\n[DATA REALTIME TRANSAKSI SALES FIELD FORCE DARI TABEL sales_ffs (DATABASE SKI_MF_PROD)]:\n` + JSON.stringify(salesStats.data, null, 2);
           }
         } catch (err) {
@@ -232,7 +232,7 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       if (isAgreementQuery || isGeneralOverview) {
         try {
           const agreementStats = await getSkiDoctorAgreements({ limit: 8 });
-          if (agreementStats && agreementStats.success && agreementStats.data && agreementStats.data.length > 0) {
+          if (agreementStats?.success && agreementStats?.data?.length > 0) {
             toolResultsBlock += `\n[DATA REALTIME PROPOSAL DISKON / KESEPAKATAN DOKTER SKI (DATABASE SKI_MF_PROD)]:\n` + JSON.stringify(agreementStats.data, null, 2);
           }
         } catch (err) {
@@ -244,7 +244,7 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       if (isTargetQuery) {
         try {
           const targetStats = await getSkiTargetStatistics({ limit: 6 });
-          if (targetStats && targetStats.success && targetStats.data && targetStats.data.length > 0) {
+          if (targetStats?.success && targetStats?.data?.length > 0) {
             toolResultsBlock += `\n[DATA REALTIME TARGET MARKETING SKI_MF_PROD]:\n` + JSON.stringify(targetStats.data, null, 2);
           }
         } catch (err) {
@@ -256,7 +256,7 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       if (isGeneralOverview || (!toolResultsBlock && !isSalesQuery && !isAgreementQuery && !isTargetQuery && !isSpcQuery && !isPaymentQuery && !isEstimationQuery)) {
         try {
           const masterSummary = await getSkiMasterSummary();
-          if (masterSummary && masterSummary.success && masterSummary.data) {
+          if (masterSummary?.success && masterSummary?.data) {
             toolResultsBlock += `\n[RINGKASAN MASTER DATA SKI_MF_PROD]:\n` + JSON.stringify(masterSummary.data, null, 2);
           }
         } catch (err) {
@@ -269,9 +269,9 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
       if (doctorParams && Object.keys(doctorParams).length > 0) {
         try {
           const apiRes = await executeGetDoctors(doctorParams);
-          if (apiRes && apiRes.success) {
+          if (apiRes?.success) {
             toolResultsBlock += `\n[DATA MASTER DOKTER]:\n` + JSON.stringify(apiRes, null, 2);
-          } else if (apiRes && apiRes.error) {
+          } else if (apiRes?.error) {
             toolResultsBlock += `\nGagal memanggil API Dokter: ${apiRes.error}`;
           }
         } catch (err) {
@@ -287,10 +287,10 @@ export async function* runAgentStream(userPrompt, history = [], options = {}) {
 
       if (isVisitQuery) {
         try {
-          const structMatch = userPrompt.match(/\b([A-Z0-9]{4,10})\b/);
+          const structMatch = /\b([A-Z0-9]{4,10})\b/.exec(userPrompt);
           const structureId = structMatch ? structMatch[1] : null;
           const visitStats = await getVisitStatistics({ structureId });
-          if (visitStats && visitStats.success && visitStats.data) {
+          if (visitStats?.success && visitStats?.data) {
             toolResultsBlock += `\n[DATA REALTIME TRANSAKSI KUNJUNGAN (DATABASE PROD)]:\n` + JSON.stringify(visitStats.data, null, 2);
           }
         } catch (err) {

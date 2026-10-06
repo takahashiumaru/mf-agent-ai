@@ -70,7 +70,9 @@ function scanDir(dirPath, rootDir, fileList = []) {
             continue;
           }
           fileList.push({ fullPath, relPath, ext });
-        } catch (e) {}
+        } catch (err) {
+          // Skip unreadable files
+        }
       }
     }
   }
@@ -88,11 +90,9 @@ function chunkDocument(content, relPath) {
   let currentHeader = path.basename(relPath);
   let currentLines = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    
+  for (const line of lines) {
     // Check if line is a Markdown header (e.g. #, ##, ###)
-    const headerMatch = line.match(/^(#{1,4})\s+(.+)$/);
+    const headerMatch = /^(#{1,4})\s+(.+)$/.exec(line);
     if (headerMatch) {
       if (currentLines.length > 0) {
         const text = currentLines.join('\n').trim();

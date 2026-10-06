@@ -13,7 +13,7 @@ function tokenize(text) {
   if (!text) return [];
   const words = text
     .toLowerCase()
-    .replace(/[^\w\s._-]/g, ' ')
+    .replace(/[^\w\s.-]/g, ' ')
     .split(/\s+/)
     .filter(w => w.length > 1 && !STOP_WORDS.has(w));
   return words;

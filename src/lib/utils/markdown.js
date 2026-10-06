@@ -15,16 +15,15 @@ const renderer = {
   table(token) {
     let header = '';
     let cell = '';
-    for (let j = 0; j < token.header.length; j++) {
-      cell += this.tablecell(token.header[j]);
+    for (const h of token.header) {
+      cell += this.tablecell(h);
     }
     header += this.tablerow({ text: cell });
     let body = '';
-    for (let j = 0; j < token.rows.length; j++) {
-      const row = token.rows[j];
+    for (const row of token.rows) {
       cell = '';
-      for (let k = 0; k < row.length; k++) {
-        cell += this.tablecell(row[k]);
+      for (const r of row) {
+        cell += this.tablecell(r);
       }
       body += this.tablerow({ text: cell });
     }
@@ -76,13 +75,12 @@ markedInstance.use({ renderer });
 
 function escapeHtml(str) {
   return str
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
+    .replaceAll('&', '&amp;')
+    .replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;')
+    .replaceAll('"', '&quot;')
+    .replaceAll("'", '&#039;');
 }
-
 export function renderMarkdown(content) {
   if (!content) return '';
   try {

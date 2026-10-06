@@ -16,10 +16,17 @@
 		<script>
 			try {
 				var saved = localStorage.getItem('visitflow-theme');
-				var theme = (saved === 'dark' || saved === 'light') ? saved : (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+				var theme = 'light';
+				if (saved === 'dark' || saved === 'light') {
+					theme = saved;
+				} else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+					theme = 'dark';
+				}
 				document.documentElement.dataset.theme = theme;
 				document.documentElement.classList.toggle('dark', theme === 'dark');
-			} catch (e) {}
+			} catch (ignoredError) {
+				// Ignore localStorage access failures in private browsing or sandboxed iframes
+			}
 		</script>
 
 		%sveltekit.head%

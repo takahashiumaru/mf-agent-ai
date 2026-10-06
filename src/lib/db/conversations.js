@@ -146,7 +146,7 @@ export function getMessagesByConversationId(conversationId) {
 export function generateTitleFromPrompt(prompt) {
   if (!prompt) return 'Percakapan Baru';
   // Strip special markdown/newlines
-  let clean = prompt.replace(/[#*`_>\[\]]/g, ' ').replace(/\s+/g, ' ').trim();
+  let clean = prompt.replace(/[#*`_>[\]]/g, ' ').replace(/\s+/g, ' ').trim();
   if (clean.length === 0) return 'Percakapan Baru';
   
   // Truncate to first sentence or 40 characters

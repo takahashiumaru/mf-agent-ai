@@ -79,8 +79,8 @@ let poolCache = new Map();
 function getDbPool(database) {
   if (poolCache.has(database)) return poolCache.get(database);
 
-  const host = process.env.MYSQL_HOST || '103.24.106.204';
-  const port = parseInt(process.env.MYSQL_PORT || '5721', 10);
+  const host = process.env.MYSQL_HOST || '';
+  const port = Number.parseInt(process.env.MYSQL_PORT || '5721', 10);
   const user = process.env.MYSQL_USER;
   const password = process.env.MYSQL_PASSWORD;
 
@@ -125,7 +125,7 @@ export function getDatabaseForProject(project = 'visitflow', explicitDb = null) 
  */
 export async function executeSafeDbQuery(sqlQuery, options = {}) {
   const database = options.database || getDatabaseForProject(options.project);
-  const sanitized = sqlQuery.trim().replace(/;+$/, '');
+  const sanitized = sqlQuery.trim().replace(/;+$/g, '');
 
   // 1. Enforce read-only: Query must start with SELECT or EXPLAIN
   if (!/^(SELECT|EXPLAIN)\b/i.test(sanitized)) {
@@ -153,7 +153,7 @@ export async function executeSafeDbQuery(sqlQuery, options = {}) {
   const command = `mysql --login-path=visitflow-production-readonly --database=${database} -e "START TRANSACTION READ ONLY; ${sanitized}; COMMIT;"`;
 
   try {
-    const { stdout, stderr } = await execAsync(command, { timeout: 15000 });
+    const { stdout } = await execAsync(command, { timeout: 15000 });
     const lines = stdout.trim().split('\n');
     if (lines.length === 0 || !lines[0]) return { success: true, data: [] };
 

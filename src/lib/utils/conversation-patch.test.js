@@ -4,13 +4,17 @@ import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
 import { normalizeConversationTitle } from './conversation-title.js';
 
-// Execute the actual route handler without importing its persistent DB module.
+test('setup: PATCH handler boundaries must exist', () => {
+  const route = readFileSync(new URL('../../routes/api/conversations/[id]/+server.js', import.meta.url), 'utf8');
+  const start = route.indexOf('export async function PATCH(');
+  const end = route.indexOf('\nexport async function DELETE', start);
+  assert.ok(start >= 0 && end > start, 'PATCH handler boundaries must exist');
+});
+
 const route = readFileSync(new URL('../../routes/api/conversations/[id]/+server.js', import.meta.url), 'utf8');
 const start = route.indexOf('export async function PATCH(');
 const end = route.indexOf('\nexport async function DELETE', start);
-assert.ok(start >= 0 && end > start, 'PATCH handler boundaries must exist');
 const patchSource = route.slice(start, end).replace('export async function', 'async function');
-
 async function patch(title, updateConversationTitle) {
   const context = vm.createContext({
     normalizeConversationTitle,

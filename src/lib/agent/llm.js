@@ -16,7 +16,7 @@ function getEnvFallback(key) {
           const line = rawLine.trim();
           if (!line) continue;
           // Support lines with or without leading '#' if they contain key=value
-          const match = line.match(/^(?:#\s*)?([A-Za-z0-9_]+)=(.*)$/);
+          const match = /^(?:#\s*)?(\w+)=(.*)$/.exec(line);
           if (match) {
             const k = match[1].trim();
             const v = match[2].trim().replace(/^['"](.*)['"]$/, '$1');

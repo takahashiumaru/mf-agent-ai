@@ -3,11 +3,16 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import vm from 'node:vm';
 
+test('setup: locate sendMessage source', () => {
+  const page = fs.readFileSync(new URL('../../routes/+page.svelte', import.meta.url), 'utf8');
+  const start = page.indexOf('  async function sendMessage(');
+  const end = page.indexOf('\n  function stopStreaming', start);
+  assert.ok(start >= 0 && end > start, 'locate actual sendMessage source');
+});
+
 const page = fs.readFileSync(new URL('../../routes/+page.svelte', import.meta.url), 'utf8');
 const start = page.indexOf('  async function sendMessage(');
 const end = page.indexOf('\n  function stopStreaming', start);
-assert.ok(start >= 0 && end > start, 'locate actual sendMessage source');
-
 async function stream(chunks) {
   let index = 0;
   const errors = [];
