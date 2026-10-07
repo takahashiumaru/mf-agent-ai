@@ -22,6 +22,7 @@ export async function POST({ request }) {
 
     const trimmedMessage = message.trim();
     let conversationId = rawConvId;
+    let effectiveProject = project;
     let isNewConversation = false;
 
     // Ensure conversation exists
@@ -34,6 +35,9 @@ export async function POST({ request }) {
       if (!existing) {
         createConversation(conversationId, 'Percakapan Baru', project);
         isNewConversation = true;
+      } else {
+        // Continued chats inherit their persisted domain, not the caller's selection.
+        effectiveProject = existing.project || 'visitflow';
       }
     }
 
@@ -79,7 +83,7 @@ export async function POST({ request }) {
 
           const agentStream = runAgentStream(trimmedMessage, priorMessages, {
             model: model || process.env.AGENT_MODEL || 'gemini-3.7-flash-low',
-            project,
+            project: effectiveProject,
             signal: request.signal
           });
 

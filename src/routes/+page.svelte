@@ -66,12 +66,15 @@
     }
   });
 
+  let conversationLoadRequest = 0;
+
   async function loadConversations(projectFilter = activeProject) {
+    const request = ++conversationLoadRequest;
     try {
       const url = projectFilter ? `/api/conversations?project=${encodeURIComponent(projectFilter)}` : '/api/conversations';
       const res = await fetch(url);
       const data = await res.json();
-      if (data.success) {
+      if (data.success && request === conversationLoadRequest && projectFilter === activeProject) {
         conversations = data.conversations || [];
       }
     } catch (err) {
