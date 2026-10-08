@@ -39,7 +39,9 @@ function fixture(isStreaming) {
     loadConversations: (project) => loads.push(project),
     toast: { success: (message) => notices.push(message) }
   });
-  vm.runInContext(`${pageFunction('startNewChat')}\n${pageFunction('handleSelectProject')}`, context);
+  const generation = page.match(/  let conversationSelectRequest = [^;]+;/)?.[0];
+  assert.ok(generation, 'detail request generation must exist in the page');
+  vm.runInContext(`${generation}\n${pageFunction('startNewChat')}\n${pageFunction('handleSelectProject')}`, context);
   const snapshot = () => JSON.parse(JSON.stringify({
     activeProject: context.activeProject,
     activeId: context.activeId,

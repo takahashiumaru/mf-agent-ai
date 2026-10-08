@@ -82,8 +82,11 @@
     }
   }
 
+  let conversationSelectRequest = 0;
+
   async function selectConversation(id, updateUrl = true) {
     if (isStreaming) return;
+    const request = ++conversationSelectRequest;
     if (window.matchMedia('(max-width: 768px)').matches) isSidebarOpen = false;
     activeId = id;
     if (updateUrl && typeof window !== 'undefined') {
@@ -94,6 +97,7 @@
     try {
       const res = await fetch(`/api/conversations/${id}`);
       const data = await res.json();
+      if (request !== conversationSelectRequest) return;
       if (data.success) {
         activeConversation = data.conversation;
         messages = data.messages || [];
@@ -104,15 +108,16 @@
           }
         }
         await tick();
-        scrollToBottom(true);
+        if (request === conversationSelectRequest) scrollToBottom(true);
       }
     } catch (err) {
-      toast.error('Gagal memuat detail percakapan');
+      if (request === conversationSelectRequest) toast.error('Gagal memuat detail percakapan');
     }
   }
 
   function startNewChat(updateUrl = true) {
     if (isStreaming) return;
+    conversationSelectRequest++;
     if (window.matchMedia('(max-width: 768px)').matches) isSidebarOpen = false;
     activeId = null;
     activeConversation = null;

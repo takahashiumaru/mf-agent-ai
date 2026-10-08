@@ -22,7 +22,16 @@ export async function GET({ params }) {
 
 export async function PATCH({ params, request }) {
   try {
-    const body = await request.json();
+    let body;
+    try {
+      body = await request.json();
+    } catch (err) {
+      if (err.name !== 'SyntaxError') throw err;
+      return json({ success: false, error: 'Invalid JSON body' }, { status: 400 });
+    }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return json({ success: false, error: 'JSON body must be an object' }, { status: 400 });
+    }
     const title = normalizeConversationTitle(body.title);
     if (!title) {
       return json({ success: false, error: 'Title is required' }, { status: 400 });
