@@ -33,6 +33,7 @@ function saveData(data) {
     fs.renameSync(tmpPath, DB_PATH);
   } catch (err) {
     console.error('[DB Client] Error saving database file:', err.message);
+    throw err;
   }
 }
 

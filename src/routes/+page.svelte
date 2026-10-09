@@ -106,6 +106,8 @@
           if (typeof localStorage !== 'undefined') {
             localStorage.setItem('visitflow-active-project', activeProject);
           }
+          conversations = [];
+          loadConversations(activeProject);
         }
         await tick();
         if (request === conversationSelectRequest) scrollToBottom(true);

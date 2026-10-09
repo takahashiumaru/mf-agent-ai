@@ -22,6 +22,7 @@ function fixture({ streaming = false, tick = async () => {} } = {}) {
     localStorage: { setItem: (...args) => writes.push(args) },
     toast: { error: message => errors.push(message) },
     scrollToBottom: value => scrolls.push(value),
+    loadConversations() {}, // List loading is covered by conversation-scope.test.js.
     fetch(url) {
       return new Promise((resolve, reject) => requests.push({ url, reject,
         resolve: data => resolve({ json: async () => data }) }));
