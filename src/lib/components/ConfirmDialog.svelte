@@ -13,21 +13,45 @@
     onCancel = () => {}
   } = $props();
 
-  let confirmBtnEl = $state(null);
+  let dialogEl = $state(null);
+  let previouslyFocused = null;
 
   function handleKeydown(e) {
     if (!isOpen) return;
+
     if (e.key === 'Escape') {
       e.preventDefault();
       onCancel();
+      return;
     }
+
+    if (e.key !== 'Tab' || !dialogEl) return;
+    e.preventDefault();
+
+    const focusable = [...dialogEl.querySelectorAll(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    )];
+    if (focusable.length === 0) {
+      dialogEl.focus();
+      return;
+    }
+
+    const currentIndex = focusable.indexOf(document.activeElement);
+    const offset = e.shiftKey ? -1 : 1;
+    const nextIndex = currentIndex === -1
+      ? (e.shiftKey ? focusable.length - 1 : 0)
+      : (currentIndex + offset + focusable.length) % focusable.length;
+    focusable[nextIndex].focus();
   }
 
   $effect(() => {
     if (isOpen) {
-      setTimeout(() => {
-        if (confirmBtnEl) confirmBtnEl.focus();
-      }, 50);
+      previouslyFocused = document.activeElement;
+      requestAnimationFrame(() => {
+        dialogEl?.querySelector('button:not([disabled])')?.focus();
+      });
+    } else if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
+      previouslyFocused.focus();
     }
   });
 </script>
@@ -48,6 +72,7 @@
       class="modal-card" 
       onclick={(e) => e.stopPropagation()}
       role="dialog"
+      bind:this={dialogEl}
       aria-modal="true"
       aria-labelledby="modal-title"
       tabindex="-1"
