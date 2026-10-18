@@ -48,7 +48,10 @@ export async function PATCH({ params, request }) {
 
 export async function DELETE({ params }) {
   try {
-    deleteConversation(params.id);
+    const deleted = deleteConversation(params.id);
+    if (!deleted) {
+      return json({ success: false, error: 'Conversation not found' }, { status: 404 });
+    }
     return json({ success: true });
   } catch (err) {
     return json({ success: false, error: err.message }, { status: 500 });

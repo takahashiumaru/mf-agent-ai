@@ -99,7 +99,6 @@
           {cancelLabel}
         </button>
         <button 
-          bind:this={confirmBtnEl}
           class="btn-confirm {isDestructive ? 'destructive' : ''}" 
           onclick={onConfirm}
         >

@@ -76,11 +76,13 @@ export function touchConversation(id) {
 export function deleteConversation(id) {
   const store = getDbStore();
   const data = store.get();
-  
+  const exists = (data.conversations || []).some(c => c.id === id);
+  if (!exists) return null;
+
   data.conversations = (data.conversations || []).filter(c => c.id !== id);
   data.messages = (data.messages || []).filter(m => m.conversation_id !== id);
   store.save(data);
-  return { success: true };
+  return { success: true, id };
 }
 
 export function deleteAllConversations(projectFilter = null) {
