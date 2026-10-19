@@ -48,7 +48,7 @@
     if (isOpen) {
       previouslyFocused = document.activeElement;
       requestAnimationFrame(() => {
-        dialogEl?.querySelector('button:not([disabled])')?.focus();
+        dialogEl?.querySelector('[data-confirm-action]')?.focus();
       });
     } else if (previouslyFocused instanceof HTMLElement && previouslyFocused.isConnected) {
       previouslyFocused.focus();
@@ -100,6 +100,7 @@
         </button>
         <button 
           class="btn-confirm {isDestructive ? 'destructive' : ''}" 
+          data-confirm-action
           onclick={onConfirm}
         >
           {confirmLabel}
